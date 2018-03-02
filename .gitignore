@@ -1,7 +1,6 @@
 
 *.vfproj
 *.sln
-./VerifyHydrophilicHydrophobicInDifferentRadius/PreProcess/*.cnf
 *.plt
 *.suo
 *.suo
@@ -11,3 +10,4 @@ Release
 data
 Paras_Config
 *.dat
+*.cnf
