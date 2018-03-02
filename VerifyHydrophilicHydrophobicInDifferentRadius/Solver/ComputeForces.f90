@@ -471,10 +471,6 @@
     deallocate(cellList)
     deallocate(sqrDist)
 
-!DPif(stepCount .gt. stepEquil) then        ! added by DP 3/11/11
-    call FENEChainForce
-!DPendif                                    ! added by DP 3/11/11
-
     return
 	end
 

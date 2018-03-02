@@ -8,7 +8,7 @@
     real * 8 cost_value_top,cost_value_temp_top
     real * 8 a_drop_top,b_drop_top,a_drop_temp_top,b_drop_temp_top,alpha_GD_top,cost_bias_top,cost_temp_top,slope_temp_top,contactangles_GD_top
     real * 8 ,allocatable :: density_value(:,:),density_value_top(:,:)
-    real * 8 CL_buttom,CL_top,CL_velocity_buttom,CL_velocity_top
+    real * 8 CL_bottom,CL_top,CL_velocity_bottom,CL_velocity_top
 
     deltaQ = 0.5
     gap_slice = 0.5
@@ -17,7 +17,7 @@
     num_slice = int(RdsDp*2/gap_slice)-1
     num_cell = int(min(regionH(2)-first_slice,regionH(1)-first_slice)/deltaQ)+2
     !num_cell = int(min(regionH(2),regionH(1))/deltaQ)+1
-    ! buttom parameters
+    ! bottom parameters
     cost_value = 0.0
     cost_value_temp = 0.0
     a_drop = 1.0
@@ -32,18 +32,18 @@
     
     if(icord .eq. 0) then
         open(2017,file = './data/ComputeCA.plt')
-        !write(2017,'(''Variables= "Steps","ContactAngles","CL_buttom","CL_Velocity_buttom","ContactAngles_top","CL_top","CL_Velocity_top"'')')
-        write(2017,'(''Variables= "Steps","ContactAngles","CL_buttom","CL_Velocity_buttom"'')')
+        !write(2017,'(''Variables= "Steps","ContactAngles","CL_bottom","CL_Velocity_bottom","ContactAngles_top","CL_top","CL_Velocity_top"'')')
+        write(2017,'(''Variables= "Steps","ContactAngles","CL_bottom","CL_Velocity_bottom"'')')
         write(2017,'(''ZONE'')')
         write(2017,'(''F = POINT'')')
         
-        open(2015,file='./data/cost_plt.plt')
-        write(2015,'(''Variables= "Steps","cost"'')')
-        write(2015,'(''ZONE'')')
-        write(2015,'(''F = POINT'')')
+        !open(2015,file='./data/cost_plt.plt')
+        !write(2015,'(''Variables= "Steps","cost"'')')
+        !write(2015,'(''ZONE'')')
+        !write(2015,'(''F = POINT'')')
         
         num_steps = 0
-        Drop_buttom = 0.0
+        Drop_bottom = 0.0
         !Drop_top = 0.0
         allocate (each_slice_point(num_slice,2))
         allocate (num_particle(num_slice,num_cell))
@@ -54,7 +54,7 @@
         num_particle(:,:) = 0
         !each_slice_point_top(:,:) = 0.0
         !num_particle_top(:,:) = 0
-        CL_temp_buttom = 0.0
+        CL_temp_bottom = 0.0
         !CL_temp_top = 0.0
         
     elseif(icord .eq. 1) then
@@ -80,17 +80,16 @@
         enddo
         
         do n = 1 , 10
-            Drop_buttom = Drop_buttom + CA_Drop_r_Z(n)/10.0 ! 取最低的10个粒子的z坐标平均值作为液滴的底
+            Drop_bottom = Drop_bottom + CA_Drop_r_Z(n)/10.0 ! 取最低的10个粒子的z坐标平均值作为液滴的底
         enddo
         do n = nDpEnd - nWallAtom - 20 + 1  ,  nDpEnd - nWallAtom
             Drop_top = Drop_top + CA_Drop_r_Z(n)/20.0  ! 取最高的20个粒子的z坐标平均值作为液滴的顶
         enddo
-        !write(*,*) 'Drop_buttom = ',Drop_buttom/num_steps
-        !write(*,*) 'Drop_top = ',Drop_top/num_steps
+
         ! 处理从底部开始的粒子,自下往上
         do i = 1 , num_slice
             do  n = nWallAtom + 1, nDpEnd
-                if(r(n,3) .ge. Drop_buttom/num_steps+(i-1)*gap_slice .and. r(n,3) .lt. Drop_buttom/num_steps+i*gap_slice) then
+                if(r(n,3) .ge. Drop_bottom/num_steps+(i-1)*gap_slice .and. r(n,3) .lt. Drop_bottom/num_steps+i*gap_slice) then
                      if (sqrt((r(n,1) - Centre_X)**2 + (r(n,2) - Centre_Y)**2) .le. first_slice) then
                          n_cell = 1
                      else
@@ -100,7 +99,6 @@
                      
                      if (n_cell .le. num_cell) then
                          num_particle(i,n_cell) = num_particle(i,n_cell) + 1
-                         !write(*,*) "num_particle(",i,",",n_cell,") = ", num_particle(i,n_cell)
                      endif
                 endif
             enddo
@@ -144,7 +142,7 @@
                     if(density_value(i,j) .le. density/20 .and. density_value(i,j+1) .le. density/20 .and. density_value(i,j+2) .le. density/20 ) then
                         each_slice_point(i,1) = first_slice + deltaQ/20 + deltaQ*(j-2) !x方向坐标
                         !each_slice_point(i,1) = deltaQ/20 + deltaQ*(j-1)
-                        each_slice_point(i,2) = Drop_buttom/num_steps + (i * gap_slice + (i - 1) * gap_slice)/2.0  ! z方向坐标
+                        each_slice_point(i,2) = Drop_bottom/num_steps + (i * gap_slice + (i - 1) * gap_slice)/2.0  ! z方向坐标
                         goto 91
                     endif
                 enddo
@@ -180,8 +178,8 @@
         do i = 1, num_slice
             write(2016,'(3f16.6)') each_slice_point(i,2),each_slice_point(i,1)
         enddo
-        write(2016,*) "--------Half of the high--------"
-        do i = 1 , int((Drop_top/num_steps - Drop_buttom/num_steps)/2/gap_slice)
+        !write(2016,*) "--------Half of the high--------"
+        do i = 1 , int((Drop_top/num_steps - Drop_bottom/num_steps)/2/gap_slice)
             write(2016,'(3f16.6)') each_slice_point(i,2),each_slice_point(i,1)
         enddo
         
@@ -190,11 +188,11 @@
         !    write(2016,'(3f16.6)') each_slice_point_top(i,2),each_slice_point_top(i,1)
         !enddo
         !write(2016,*) "--------Half of the high--------"
-        !do i = 1 , int((Drop_top/num_steps - Drop_buttom/num_steps)/2/gap_slice)
+        !do i = 1 , int((Drop_top/num_steps - Drop_bottom/num_steps)/2/gap_slice)
         !    write(2016,'(3f16.6)') each_slice_point_top(i,2),each_slice_point_top(i,1)
         !enddo
         
-        CL_buttom = each_slice_point(1,1)
+        CL_bottom = each_slice_point(1,1)
         !CL_top = each_slice_point_top(1,1)
         
 ! 利用回归算法对液滴形状进行拟合----------x^2+(y-a)^2=b^2------------------------
@@ -205,13 +203,13 @@
         m = 0
         do while (check_iter .eq. 1) 
             m = m + 1
-            !do i = 1 , int((Drop_top/num_steps - Drop_buttom/num_steps)/2/gap_slice)
+            !do i = 1 , int((Drop_top/num_steps - Drop_bottom/num_steps)/2/gap_slice)
             do i = 1, num_slice
                 if(each_slice_point(i,1) .gt. deltaQ/20) then
                     cost_value = cost_value + (((b_drop**2-(each_slice_point(i,2)-a_drop)**2-each_slice_point(i,1)**2))**2)/num_slice/4.0
                 endif
             enddo
-            !do i = 1 , int((Drop_top/num_steps - Drop_buttom/num_steps)/2/gap_slice)  ! 利用梯度下降算法求得a,b的全局最优解
+            !do i = 1 , int((Drop_top/num_steps - Drop_bottom/num_steps)/2/gap_slice)  ! 利用梯度下降算法求得a,b的全局最优解
             do i = 1, num_slice
                 if(each_slice_point(i,1) .gt. deltaQ/20) then
                     a_drop_temp = a_drop
@@ -220,7 +218,7 @@
                     b_drop = b_drop_temp - alpha_GD*((b_drop_temp**2-(each_slice_point(i,2)-a_drop_temp)**2-each_slice_point(i,1)**2))*b_drop_temp/num_slice
                 endif
             enddo
-            write(2015,'(i6,f16.6)') m,cost_value
+            !write(2015,'(i6,f16.6)') m,cost_value
             if (abs(cost_value - cost_temp) .le. 0.0000001) then
                 check_iter = 0
             endif
@@ -228,7 +226,7 @@
             cost_temp = cost_value
             cost_value = 0.0
         enddo
-        slope_temp = (a_drop - Drop_buttom/num_steps)/sqrt(b_drop**2 - (Drop_buttom/num_steps - a_drop)**2)
+        slope_temp = (a_drop - Drop_bottom/num_steps)/sqrt(b_drop**2 - (Drop_bottom/num_steps - a_drop)**2)
         contactangles_GD = 90 + atan(slope_temp)*180/pi
         
         ! Contact Angles from top to buttom
@@ -238,13 +236,13 @@
         !m = 0
         !do while (check_iter .eq. 1) 
         !    m = m + 1
-        !    !do i = 1 , int((Drop_top/num_steps - Drop_buttom/num_steps)/2/gap_slice)
+        !    !do i = 1 , int((Drop_top/num_steps - Drop_bottom/num_steps)/2/gap_slice)
         !    do i = 1, num_slice
         !        if(each_slice_point(i,1) .gt. deltaQ/20) then
         !            cost_value_top = cost_value_top + (((b_drop_top**2-(each_slice_point_top(i,2)-a_drop_top)**2-each_slice_point_top(i,1)**2))**2)/num_slice/4.0
         !        endif
         !    enddo
-        !    !do i = 1 , int((Drop_top/num_steps - Drop_buttom/num_steps)/2/gap_slice)  ! 利用梯度下降算法求得a,b的全局最优解
+        !    !do i = 1 , int((Drop_top/num_steps - Drop_bottom/num_steps)/2/gap_slice)  ! 利用梯度下降算法求得a,b的全局最优解
         !    do i = 1, num_slice
         !        if(each_slice_point(i,1) .gt. deltaQ/20) then
         !            a_drop_temp_top = a_drop_top
@@ -268,9 +266,9 @@
         !    contactangles_GD_top = 90 - atan(slope_temp_top)*180/pi
         !endif
         
-        CL_velocity_buttom = (CL_buttom - CL_temp_buttom)/num_steps/deltaT
+        CL_velocity_bottom = (CL_bottom - CL_temp_bottom)/num_steps/deltaT
         !CL_velocity_top = (CL_top - CL_temp_top)/num_steps/deltaT
-        CL_temp_buttom = CL_buttom
+        CL_temp_bottom = CL_bottom
         !CL_temp_top = CL_top
         
         !write(*,*) 'a = ',a_drop, '  ','b = ',b_drop,'a_top = ',a_drop_top, '  ','b_top = ',b_drop_top
@@ -278,10 +276,10 @@
         !write(2016,'(4f16.6)') a_drop,b_drop,a_drop_top,b_drop_top
         write(2016,'(4f16.6)') a_drop,b_drop
         close(2016)
-        !write(2017,'(i6,6f16.6)') stepCount, contactangles_GD, CL_buttom, CL_velocity_buttom, contactangles_GD_top, CL_top, CL_velocity_top
-        write(2017,'(i6,3f16.6)') stepCount, contactangles_GD, CL_buttom, CL_velocity_buttom
+        !write(2017,'(i6,6f16.6)') stepCount, contactangles_GD, CL_bottom, CL_velocity_bottom, contactangles_GD_top, CL_top, CL_velocity_top
+        write(2017,'(i6,3f16.6)') stepCount, contactangles_GD, CL_bottom, CL_velocity_bottom
         
-        Drop_buttom = 0.0
+        Drop_bottom = 0.0
         Drop_top = 0.0
         num_steps = 0
         num_particle(:,:) = 0
@@ -296,7 +294,7 @@
         !deallocate(each_slice_point_top)
         !deallocate(num_particle_top)
         close(2017)
-        close(2015)
+        !close(2015)
     endif
 
     return 

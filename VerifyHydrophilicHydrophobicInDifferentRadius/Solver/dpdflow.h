@@ -112,13 +112,13 @@
 !--------------------------------------compute contact angles---------
 
 	integer num_steps
-	real * 8  Drop_buttom, Drop_top, CL_temp_buttom, CL_temp_top
+	real * 8  Drop_bottom, Drop_top, CL_temp_bottom, CL_temp_top
 	real * 8, pointer::each_slice_point(:, : ), each_slice_point_top(:, : )
 	integer, pointer::num_particle(:, : ), num_particle_top(:, : )
 	common / computecontactangles_real8 / each_slice_point, each_slice_point_top
 	common / computecontactangles_int / num_particle, num_particle_top
 	common / computecontactangles__int / num_steps
-	common / computecontactangles__real8 / Drop_buttom, Drop_top, CL_temp_buttom, CL_temp_top
+	common / computecontactangles__real8 / Drop_bottom, Drop_top, CL_temp_bottom, CL_temp_top
 
 	real * 8  alphaw_top
 	common / drop_topwall_alpha / alphaw_top

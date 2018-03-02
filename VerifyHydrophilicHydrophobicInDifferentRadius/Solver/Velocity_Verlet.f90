@@ -12,15 +12,6 @@
 !   real*8, allocatable :: rvm(:,:)
 !   allocate (rvm(nAtom,3))
     
-     !move the up wall to down by small velocity  2017.8.23 by lijm
-    !if(stepCount .ge. 20000 .and. stepCount .lt. (stepLimit - 10000)) then
-    !    do n = 1 , nWallAtom
-    !        if(wr_mark(n) .eq. 1) then
-    !            r(n,3) = r(n,3) - 30.0/(stepLimit - 10000 - 20000)
-    !        endif
-    !    enddo
-    !endif
-    
     do k = 1, NDIM
 	   do n = nWallAtom + 1, nAtom
           temp = deltaT*ra(n,k)

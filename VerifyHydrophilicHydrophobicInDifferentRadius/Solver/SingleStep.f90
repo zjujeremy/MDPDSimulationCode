@@ -34,23 +34,6 @@
         endif
     endif
 
-    if(stepCount .gt. 1000 .and. mod((stepCount - 1000),              &
-       stepChainProps) .eq. 0 .and. stepCount .le. stepEquil          &
-       .and. nChain .gt.0) call EvalChainProps
-
-    if(nChainconf .gt. 0) then
-        if(stepCount .eq. stepEquil .and. nChain .gt.0) call PrintChainConf
-        if(stepCount .gt. stepEquil .and. mod((stepCount - stepEquil),    &
-           stepChainProps*limitChainProps) .eq. 0 .and. nChain .gt.0)     &
-           call PrintChainConf
-    endif
-
-    if(nDp .gt. 0) then
-       if(stepCount .eq. stepEquil) call PrintDropConf
-       if(stepCount .gt. stepEquil .and. mod((stepCount - stepEquil), &
-	   stepChainProps*limitChainProps) .eq. 0 ) call PrintDropConf
-    endif
-
     stepUnEquil = stepCount - stepEquil
     if(stepUnEquil .lt. startSample) then
         isample = 0
@@ -70,9 +53,6 @@
             call GridAverage(0)
         endif
     endif
-
-    if(timeNow .ge. timeSteady .and. mod(stepCount,3) .eq. 0          &
-       .and. nChain .gt. 0) call GridAvChainProps(1)
 
     return
     end

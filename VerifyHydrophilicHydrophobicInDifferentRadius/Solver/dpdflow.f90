@@ -16,12 +16,12 @@
     implicit none
     include 'dpdflow.h'
 
-!   real*4	stime, rtime
+    !real*4	stime, rtime
 !   character*50 inf, intcnf, out1, out2, out3, out4
     integer n, k
     integer drp1
 
-!   call getCPUtime(stime)
+    !call getCPUtime(stime)
 !   call getarg(1, inf)
 !	call getarg(2, intcnf)
 !	call getarg(3, out1)
@@ -76,19 +76,6 @@
 	timeNow = 0.
 	moreCycles = 1
     
-    call readExtraPara			!read Extra parameters: 
-                                !the RDFstepSample and deltaQ for RDF computation
-    ! record wall particles large than 0 or smaller than 0     2017.8.23 by lijm
-    wr_mark = 0
-    do n = 1 , nWallAtom
-        if(r(n,3) .gt. 0) then
-            wr_mark(n) = 1
-        else
-            wr_mark(n) = 0
-        endif
-    enddo
-    
-    
     do while (moreCycles .eq. 1)
 
         If (runId .eq. 1 .and. stepCount .gt. stepEquil) then
@@ -102,10 +89,6 @@
 	        enddo
         endif
 
-        if (runID .eq. 4 .and. stepCount .eq. stepEquil) then
-           call PipeConf
-        endif
-
 !------ initialize the particle velocity with LE BC -------
 !    if(runId .eq. 5 .and. stepCount .eq. stepEquil) then
 !        do n = nWallAtom + 1, nAtom
@@ -115,8 +98,8 @@
 !----------------------------------------------------------
         if (stepCount==10) call ouptParticleSituation
         if(stepCount > stepEquil)then
-            if(stepCount <= 10000 .and.mod(stepCount,50) .eq. 0) call ouptParticleSituation
-            if(stepCount > 10000 .and.mod(stepCount,100) .eq. 0) call ouptParticleSituation
+            if(stepCount <= 10000 .and.mod(stepCount,200) .eq. 0) call ouptParticleSituation
+            if(stepCount > 10000 .and.mod(stepCount,500) .eq. 0) call ouptParticleSituation
         else
             if(mod(stepCount,50) .eq. 0) call ouptParticleSituation
         endif
@@ -142,26 +125,22 @@
         !    if (stepCount .eq. stepLimit) call ouptRDF(2)
         !endif
 
-! compute the droplet's contact angles begain -------------------------------------
-        !if (nDp .eq. 1 .and. stepCount .eq. 10) call ComputeCA(0)
-        !if (stepCount .gt. 20) then
-        !    call ComputeCA(1)
-        !    if (mod(stepCount,100) .eq. 0) call ComputeCA(2)
-        !endif
-        !if(stepCount .eq. stepLimit) call ComputeCA(3)
-! compute the droplet's contact angles end -------------------------------------
+    ! compute the droplet's contact angles------------------------------------
+        if (nDp .eq. 1 .and. stepCount .eq. 10) call ComputeCA(0)
+        if (stepCount .gt. 20) then
+            call ComputeCA(1)
+            if (mod(stepCount,100) .eq. 0) call ComputeCA(2)
+        endif
+        if(stepCount .eq. stepLimit) call ComputeCA(3)
 
 	    if(stepCount .ge. stepLimit) moreCycles = 0
-
+        
     enddo
 
-	call GridAvChainProps(2)	
-	call PrintChainLen
-	
-!	call getCPUtime(rtime)
-!	write(*,'(''Total CPU Time = '', f10.2)') rtime - stime
-!	write(lst1,'(//5x,''Total CPU Time = '', f10.2)') rtime - stime
-!	write(lst2,'(//5x,''Total CPU Time = '', f10.2)') rtime - stime
+	!call getCPUtime(rtime)
+	!write(*,'(''Total CPU Time = '', f10.2)') rtime - stime
+	!write(lst1,'(//5x,''Total CPU Time = '', f10.2)') rtime - stime
+	!write(lst2,'(//5x,''Total CPU Time = '', f10.2)') rtime - stime
 	
 	close (lst1)
 	close (lst2)
@@ -190,20 +169,39 @@
 
 	integer	k, n
 
-    read(lcnf,*) nWallAtom, nDpEnd, nChainend, nAtom, nDp, RdsDp,      &
+    read(lcnf,*) nWallAtom, nDpEnd, nChainEnd, nAtom, nDp, RdsDp,      &
                  DpFzn(1:nDp), nChain, ChainLen, initUcell, region,    &
                  regionH, gap, wmingap, wLayer
-
-    do k = 1, NDIM
-       read(lcnf,*) (wn(n,k), n = 1, nWallAtom)
-       read(lcnf,*) (r(n,k),  n = 1, nAtom)
+    
+    do n = 1, nAtom
+        read(lcnf,*) (r(n,k), k = 1, NDIM)
     enddo
-
-    if(nDp .ne. 0 .or. nChain .ne. 0) then
-        do k = 1, NDIM
-            read(lcnf,*) (ncc(n,k), n = nWallAtom+1, nChainEnd)
+    
+    do n = 1, nWallAtom
+	   read(lcnf,*) (wn(n,k), k = 1, NDIM)
+    enddo
+    
+    if(nDp .gt. 0) then
+        do n = nWallAtom + 1, nDpEnd
+            read(lcnf,*) (ncc(n,k), k = 1, NDIM)
         enddo
     endif
+    
+    if(nChain .gt. 0) then
+        do n = nDpEnd + 1, nChainEnd
+            read(lcnf,*) (ncc(n,k), k = 1, NDIM)
+        enddo
+    endif
+    !do k = 1, NDIM
+    !   read(lcnf,*) (wn(n,k), n = 1, nWallAtom)
+    !   read(lcnf,*) (r(n,k),  n = 1, nAtom)
+    !enddo
+    !
+    !if(nDp .ne. 0 .or. nChain .ne. 0) then
+    !    do k = 1, NDIM
+    !        read(lcnf,*) (ncc(n,k), n = nWallAtom+1, nChainEnd)
+    !    enddo
+    !endif
 
     close (lcnf)
 
@@ -498,14 +496,7 @@
 
 	stepCount = 0
 	sInitKinEnergy = 0.
-	countChainProps = 0
-	
-	call GridAverage(0)
-	call GridAvChainProps(0)
 
-	countGrid = 0
-! ----- times that the chain particle crossing the boundary      -----
-! ----- (DP--22/11/11)                                           -----
     do n = 1, nAtom
        do k = 1, NDIM
           ncc(n,k) = 0
@@ -605,272 +596,5 @@
 	enddo
 
 	return
-
     end
     
-    subroutine readExtraPara
-	implicit none
-	include 'dpdflow.h'
-	integer BnGridH,i,j,k,n
-	real*8 alpha,cc,d,T
- 
-	open(300, file = './data/ExtraPara.dat')  
-	read(300,*)
-    read(300,*)
-	read(300,*) deltaQ, RDFstepSample
-	read(300,*)
-	read(300,*) cellength
-    read(300,*)
-    read(300,*)
-	!read(300,*) DiffintStep, DiffStep
- !   read(300,*)
- !   read(300,*)
-	!read(300,*) JStep, BStep, rho0, JP0, tau, lpercent
-
-	!T=1.0
-	!alpha=0.1
- !   cc=4.16
- !   d=18.
- !   if (rho0 .ge.0) then
-	!P0 = 2*alpha*alphaB*(rCut2**4)*(rho0**3)+(alpha*alphaf-2*alpha*alphaB*(rCut2**4)*cc)*(rho0**2)+T*rho0+2*alpha*alphaB*(rCut2**4)*d
- !   endif
-    !print*,tau,rho0,P0
-    
-    !if (stepEquil .gt. (stepLimit-RDFstepSample)) then 
-    !    print*, 'RDFstepSample is too big, please set small one in file ExtraPara'
-    !    pause
-    !    stop
-    !endif    
-    
-    !if (stepEquil .gt. (stepLimit-DiffStep)) then 
-    !    print*, 'grossStep is too big, please set small one in file ExtraPara'
-    !    pause
-    !    stop
-    !endif        
-
-	close(300)
-
-end
-
-!--------------------------------------------------------------------
-!
-! 	subroutine AdjustWallTemp
-!
-!	implicit none
-!	include 'dpdflow.h'
-!
-!!	Parameters
-!
-!!	Locals
-!
-!	integer	k, n
-!	real*8	vFac, sum, v(NDIM), tw
-!
-!	sum = 0.
-!	do k = 1, NDIM
-!	   v(k) = 0.
-!	   do n = 1, nWallAtom
-!	      v(k) = v(k) + rv(n,k)
-!	   enddo
-!	enddo
-!	
-!	do k = 1, NDIM
-!	   v(k) = v(k)/nWallAtom
-!	enddo
-!	
-!	do k = 1, NDIM
-!	   do n = 1, nWallAtom
-!	      rv(n,k) = rv(n,k) - v(k)
-!	      sum = sum + rv(n,k)**2
-!	   enddo
-!	enddo
-!
-!   vFac = vMag/sqrt(sum/nWallAtom)
-!	do k = 1, NDIM
-!	   do n = 1, nWallAtom
-!	      rv(n,k) = rv(n,k)*vFac
-!	   enddo
-! 	enddo
-!
-!!	check wqll temperaure
-!
-!! 	sum = 0.
-!! 	do k = 1, NDIM
-!! 	  do n = 1, nWallAtom
-!! 	    sum = sum + rv(n,k)**2
-!! 	  enddo
-!! 	enddo
-!! 	tw = sum/(3.*(nWallAtom - 1.))
-!! 	print*, 'tw = ', tw
-!
-!	return
-!
-!	end
-!
-!-------------------------------------------------------------
-!
-!	subroutine KeepWallTemp
-!
-!	implicit none
-!	include 'dpdflow.h'
-!
-!!	parameters
-!
-!!	Localls
-!
-!	integer	k, n
-!	real*8	e(NDIM), vTmp(NDIM)
-!
-!	do k = 1, NDIM
-!	  vTmp(k) = 0.
-!	enddo
-!
-!	do n = 1, nWallAtom
-!	   call RandVec3 (e)
-!	   do k = 1, NDIM
-!	      rv(n,k) = vMag*e(k)
-!	      vTmp(k) = vTmp(k) + rv(n,k)
-!	   enddo
-!	enddo
-!
-!	do k = 1, NDIM
-!	   vTmp(k) = vTmp(k)/nWallAtom
-!	   do n = 1, nWallAtom
-!	      rv(n,k) = rv(n,k) - vTmp(k)
-!	   enddo
-!	enddo
-!
-!	return
-!
-!	end
-!
-!-----------------------------------------------------------------------------------
-!	
-!	subroutine checkpst(n)
-!
-!	implicit none
-!	include 'dpdflow.h'
-!	
-!	integer	k, n
-!
-!	write(*,'(''stepCount = '',i5)') stepCount
-!	write(*,'(''r(n)  = '', 3f10.4)') (r(n,k), k = 1,3)
-!	write(*,'(''rv(n) = '', 3f10.4)') (rv(n,k), k = 1,3)
-!!	call flush(6)
-!	pause
-!
-!	return
-!
-!	end
-!
-!-----------------------------------------------------------------------
-!	
-!	subroutine checknbr
-!
-!	implicit none
-!	include 'dpdflow.h'
-!
-!	integer i, j, k
-!	real*8	dr
-!	print*, 'timeNow = ', timeNow
-!	do i = 1, nAtom
-!	  dr = 0.
-!	  do k = 1, NDIM
-!	    dr = dr + (r(538,k) - r(i,k))**2
-!	  enddo
-!	  if(dr .le. rrCut) then
-!	    print*, ' atom = ', i
-!	  endif
-!	enddo
-!
-!	return
-!
-!	end
-!
-!--------------------------------------------------------------------------
-!
-!	subroutine EvalProfile
-!
-!	implicit none
-!	include 'dpdflow.h'
-!
-!!	Parameters
-!
-!!	Locals
-!
-!	integer	k, n
-!
-!!	nEval = nEval + 1.0
-!	do n = 1, sizeHistGrid(2)
-!	  profileV(n) = 0.
-!	  profileT(n) = 0.
-!	enddo
-!
-!	do n = 1, hSize
-!	  k = (n - 1)/sizeHistGrid(1) + 1
-!	  profileV(k) = profileV(k) + histGrid(n,3)
-!	  profileT(k) = profileT(k) + histGrid(n,2)
-!	enddo
-!
-!	do n = 1, sizeHistGrid(2)
-!	  profileV(n) = profileV(n)/sizeHistGrid(1)
-!	  profileT(n) = profileT(n)/sizeHistGrid(1)
-!	enddo
-!
-!	return
-!
-!	end
-!
-!---------------------------------------------------------------
-!
-!	subroutine PrintProfile
-!
-!	implicit none
-!	include 'dpdflow.h'
-!
-!	Parameters
-!
-!	Locals
-!
-!	integer	n
-!	real	zVal, Velocity, Temperat, MolecNo
-!
-!	write(lst2, '(/5x, ''Velocity Profile'')')
-!	write(lst2, '(5x, ''time = '', f9.4)') timeNow
-!	write(lst2, '(3x, ''No'', 6x, ''Z'', 9x, ''Vz'',10x,''T'',&
-!	                 7x, ''Ni/<Ni>'')')
-!
-!	do n = 1, sizeHistGrid(2)
-!	  zVal = (n - 0.5)/sizeHistGrid(2)*region(NDIM) - regionH(NDIM)
-!	  write(lst2, 100) n, zVal, profileV(n), profileT(n), histGrid(n,1)
-!	enddo
-!
-!	nEval = 0.
-!
-! 100	format(2x, i3, 2x, f8.3, 3(2x, f9.4))
-!
-!	return
-!
-!	end
-!
-!------------------------------------------------------------------
-!	
-!	subroutine getCPUtime (seconds)
-!
-!	implicit none
-!!	Parameters
-!
-!    real*4, intent(out):: seconds
-!
-!!	Locals
-!
-!    real*4   tarray(2), etime
-!    external etime
-!
-!    seconds= etime(tarray)
-!
-!    return
-!
-!    end
-!
-!! ----------------------------------------------------------------------
