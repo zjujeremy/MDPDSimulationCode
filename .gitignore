@@ -1,7 +1,7 @@
 
 *.vfproj
 *.sln
-*.cnf
+./VerifyHydrophilicHydrophobicInDifferentRadius/PreProcess/*.cnf
 *.plt
 *.suo
 *.suo
