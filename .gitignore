@@ -1,4 +1,7 @@
 
+Release
+data
+Paras_Config
 *.vfproj
 *.sln
 *.plt
@@ -6,8 +9,5 @@
 *.suo
 *.u2d
 *.20
-Release
-data
-Paras_Config
 *.dat
 *.cnf
