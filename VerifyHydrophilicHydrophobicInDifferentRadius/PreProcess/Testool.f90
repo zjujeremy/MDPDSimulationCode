@@ -66,9 +66,6 @@
                                      nAtom,nDpEnd-nWallAtom
     close(201)
     
- write(*,*) 'We have output the all particles location | stepCount:',step
- !pause
-    
-    end
+    write(*,*) 'We have output the all particles location | stepCount:',step
 
-!! Added by linyuqing 
+    end

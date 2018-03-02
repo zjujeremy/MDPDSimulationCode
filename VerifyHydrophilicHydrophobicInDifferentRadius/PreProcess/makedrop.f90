@@ -82,7 +82,7 @@
     
 ! find the center of a droplet
 5 continue
-!pause
+
     if (nDp .gt. 1)then
         y(1) = subdom(idom,1) + 0.5*(1.0 + RandR(seeds))*subreg(idom,1)
         y(2) = 0.5*RandR(seeds)*subreg(idom,2) 
@@ -197,7 +197,6 @@
     enddo
 
    write(*,'(2x, A9, i3, 2x, A10)') 'Droplet #', iDp, 'generated!'
-    !pause
     !do i = 1, npt
     !    m = m + 1
     !    do k = 1, NDIM
@@ -207,7 +206,7 @@
     !enddo
 
    do i = 1, npt
-       !if(xx(i,3) .gt. y(3)) then
+       !if(xx(i,3) .gt. y(3)) then   !half-shere   added 2017.1.4
            m = m + 1
            do k = 1, NDIM
                 x(m,k) = xx(i,k)
@@ -215,9 +214,6 @@
             enddo
         !endif
    enddo
-   !!!!!!!!!!!!!half-shere   added 2017.1.4
-   !write(*,*) "m=",m
-   !pause
     
     do k = 1, NDIM
         rc(idom, idp, k) = y(k)
@@ -226,15 +222,10 @@
     write(* ,*) 'The coordinates of droplets centers: (x,y,z)'
     write(*,'( ''('',f8.4, '','', f8.4, '','', f8.4,'')'')') (y(k), i = 1, NDIM)
     
-    
 	return
-
     end
     
     
-    
-    
-    !--------------------------------------------------------------------------
     subroutine sphereDistribution(rho,rdp)
     
     real*8 rho, rdp, volume, length
@@ -334,7 +325,7 @@
     close(211)
     close(200)
     deallocate (dis, rad, rnp)
-    !pause
+
     end
 
 !---------------------------------------------------------------------
@@ -369,8 +360,6 @@
              e(m,n,3))
 
 !    call getCPUtime(t1)
-    !open (124,file('./data/sphere/test124.txt'))
-   ! write (123,*) PI
 
     dalfa=PI/25.0
     dbeta=PI/20.0
@@ -429,8 +418,7 @@
        write(555, '(1x, f12.6)') error
        if(error<1e-4) exit
 
-!    write(*,*)"error=",error
-    end do
+    enddo
     close(555)
 !    call getCPUtime(t2)
 !    write(*,*)t2-t1
@@ -447,8 +435,7 @@
                e)
 
     end
-     
-!--------------------------------------------------------------------
+    
 
     subroutine angletoCartesian(angle1,angle2,x1,y1,z1)
 
@@ -465,7 +452,6 @@
     
     end
 
-!--------------------------------------------------------------------
 
     subroutine Ftwopoints(x1,y1,z1,x2,y2,z2,F2)
 
@@ -491,7 +477,6 @@
     
     end
 
-!--------------------------------------------------------------------
 
     subroutine pointtosphere(x0,y0,z0,x1,y1,z1)
 
@@ -508,7 +493,6 @@
 
     end
 
-!--------------------------------------------------------------------
 
     subroutine getCPUtime(seconds)
 
@@ -532,4 +516,3 @@
     
     end
 
-!--------------------------------------------------------------------

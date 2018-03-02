@@ -2,6 +2,10 @@
 *.vfproj
 *.sln
 Release
+data
+Paras_Config
+*.cnf
+*.plt
 *.suo
 *.suo
 *.u2d

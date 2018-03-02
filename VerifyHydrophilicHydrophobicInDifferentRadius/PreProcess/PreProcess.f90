@@ -1,11 +1,3 @@
-!-------------------------------------------------------------------
-!	chainconf.f90
-!	generate the configuration of wall, chain and free dpd parti-
-!	cels for simulating polymer solutions. Configuration data can
-!	be input from the terminal and wtitten into "fort.10" at the 
-!	first time and then read from it next time.
-!-------------------------------------------------------------------
-
     implicit none
 
     integer	MAXCTP, MAXWATM, MAXATOM, NDIM, MAXBDS, MAXDP
@@ -172,8 +164,8 @@
         if(dratio .gt.0)then
             
             lattice = 'FCC'
-           ! pause
-!            call setWallAtoms(fgap, wgap, nWallAtom, h3)
+
+            !call setWallAtoms(fgap, wgap, nWallAtom, h3)
     
 	        call setSubDomain(fgap, nChain, nDp, isbm, nchsb, ndpsb)
     
@@ -226,18 +218,10 @@
     lattice = 'FCC'
 
     
-    call setWallAtoms(fgap, wgap, nWallAtom, h3,widtotx,solidfractionx,widtoty,solidfractiony,ntextlay,keytext)
+    call setWallAtoms(fgap, wgap, nWallAtom, h3, &
+                        widtotx, solidfractionx, widtoty, solidfractiony, ntextlay, keytext)
 
 	call setSubDomain(fgap, nChain, nDp, isbm, nchsb, ndpsb)
-    
-    !ensuring droplet's original coordinate
-    !if(keytext .eq. 1) then
-    !    Cz(1) = -regionH(3) + (4/2+2)* wgap + RdsDp* (4.0 / density/dratio)**(1./3.)
-    !    write(*,*) "Cx(1), Cy(1), Cz(1)",Cx(1), Cy(1), Cz(1)
-    !else
-    !    Cz(1) = -regionH(3) + 4/2* wgap + RdsDp* (4.0 / density/dratio)**(1./3.)
-    !    write(*,*) "Cx(1), Cy(1), Cz(1)",Cx(1), Cy(1), Cz(1)
-    !endif
     
 	call setPolySolution(isbm, nchsb, ndpsb, chainLen, RdsDp, &
 			             nChainend, nDpEnd, seeds, fgap, wLayer, ncc)
@@ -314,8 +298,7 @@
 	write(16,*) nWallAtom, nDpEnd, nChainend, nAtom, nDp, RdsDp,  &
               DpFzn(1:nDp), nChain, ChainLen, initUcell, region,  &
               regionH, gap, wmingap, wLayer
-    !write(*, *) r(1, 3), "  ", Cz(1)
-    !pause
+ 
 	!do k = 1, NDIM
 	!   write(16,*) (wn(n,k), n = 1, nWallAtom)
 	!   write(16,*) (r(n,k), n = 1, nAtom)
@@ -333,7 +316,7 @@
  !       enddo
  !   endif
     
-    !for c++ code
+    !for c++ solver input
     do n = 1, nAtom
         write(16,*) (r(n,k), k = 1, NDIM)
     enddo
@@ -388,7 +371,7 @@
 	real*8	r(MAXATOM,NDIM), wn(MAXWATM,NDIM), regionH(NDIM), &
 		    region(NDIM), gap(NDIM)
 	real*8	subdom(MAXCTP,8)
-!DP	character key
+!character key
 	common  /intg / nline, nAtom, nWallAtom, nsubdom
 	common  /intgar/ ncontrlp, xuc, zuc, initUcell
 	common	/realar/ subdom, gap, wmingap
@@ -444,11 +427,6 @@
 	m1 = 0
     m2 = 0
 	do k = 1, nsubdom
-!DP	   if(nChain .eq. 0) then
-!DP	      nchsb(k) = 0
-!DP	   else
-!DP	      nchsb(k) = (nChain*nchsb(k))/ntot + 1
-!DP	   endif
 	   if(nChain .eq. 0) then                        !---DP
 	      nchsb(k) = 0                                 
 	   elseif(nsubdom .eq. 1) then

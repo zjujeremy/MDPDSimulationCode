@@ -178,9 +178,6 @@
     enddo
 
     ni = 0
-
-    !write(*,*)'**', nsubdom,'**',(isubreg(1,i),i=1,3),'**',(ctsubm(1,i),i=1,3),'**',npart,'**'
-    !pause
     
 !    do idom = 1, nsubdom
 !        do nZ = 1, isubreg(idom,3)
@@ -209,7 +206,7 @@
 !                            if(s .lt. (RdsDp)**2) goto 50
 !                        enddo
 !
-!!                        if(ri(NDIM) .gt. 10) goto 50                !¿ÓµùÂð£¿
+!!                        if(ri(NDIM) .gt. 10) goto 50               
 !
 !                        overlap = 0
 !                        nClose  = 0
@@ -312,7 +309,7 @@
 !--------------- END -----------------------
 
     nAtom = n
-    write(*,*) 'natom=',natom
+    write(*,*) 'nAtom=', nAtom
 
     return
     end
