@@ -2,6 +2,7 @@
 Release
 data
 Paras_Config
+Debug
 *.vfproj
 *.sln
 *.plt
@@ -11,3 +12,8 @@ Paras_Config
 *.20
 *.dat
 *.cnf
+*.mod
+*.obj
+*.exe
+*.pdb
+*.manifest
