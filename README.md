@@ -5,3 +5,4 @@ The code use dissipative particle dynamics to simulate flow problems. The initia
 If you have any bugs, conecting me by 347388344@qq.com
 
 ##### Verify Hydrophilic Hydrophobic In Different Radius
+##### Squeeze Droplet Between Two Parallel Flats
